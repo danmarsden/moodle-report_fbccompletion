@@ -24,7 +24,7 @@
  */
 
 require('../../config.php');
-require_once($CFG->dirroot.'/report/completion/lib.php');
+require_once($CFG->dirroot.'/report/fbccompletion/lib.php');
 require_once($CFG->libdir.'/completionlib.php');
 
 $userid   = required_param('id', PARAM_INT);
@@ -50,12 +50,12 @@ if (!report_completion_can_access_user_report($user, $course, true)) {
     error('Can not access user completion report');
 }
 
-add_to_log($course->id, 'course', 'report completion', "report/completion/user.php?id=$user->id&course=$course->id", $course->id);
+add_to_log($course->id, 'course', 'report completion', "report/fbccompletion/user.php?id=$user->id&course=$course->id", $course->id);
 
 $stractivityreport = get_string('activityreport');
 
 $PAGE->set_pagelayout('admin');
-$PAGE->set_url('/report/completion/user.php', array('id'=>$user->id, 'course'=>$course->id));
+$PAGE->set_url('/report/fbccompletion/user.php', array('id'=>$user->id, 'course'=>$course->id));
 $PAGE->navigation->extend_for_user($user);
 $PAGE->navigation->set_userid_for_parent_checks($user->id); // see MDL-25805 for reasons and for full commit reference for reversal when fixed.
 $PAGE->set_title("$course->shortname: $stractivityreport");
@@ -156,7 +156,7 @@ foreach ($courses as $type => $infos) {
     // If there are courses with this status
     if (!empty($infos)) {
 
-        echo '<h1 align="center">'.get_string($type, 'report_completion').'</h1>';
+        echo '<h1 align="center">'.get_string($type, 'report_fbccompletion').'</h1>';
         echo '<table class="generalbox boxaligncenter">';
         echo '<tr class="ccheader">';
         echo '<th class="c0 header" scope="col">'.get_string('course').'</th>';
@@ -165,7 +165,7 @@ foreach ($courses as $type => $infos) {
         echo '<th class="c3 header" scope="col" width="15%">'.get_string('info').'</th>';
 
         if ($type === 'complete') {
-            echo '<th class="c4 header" scope="col">'.get_string('completiondate', 'report_completion').'</th>';
+            echo '<th class="c4 header" scope="col">'.get_string('completiondate', 'report_fbccompletion').'</th>';
         }
 
         echo '</tr>';
@@ -229,7 +229,7 @@ foreach ($courses as $type => $infos) {
             if (!empty($activities)) {
 
                 $row = array();
-                $row['title'] = get_string('activitiescomplete', 'report_completion');
+                $row['title'] = get_string('activitiescomplete', 'report_fbccompletion');
                 $row['status'] = $activities_complete.' of '.count($activities);
                 $rows[] = $row;
             }
@@ -265,7 +265,7 @@ foreach ($courses as $type => $infos) {
                         break;
 
                     case 'No':
-                        echo get_string('incomplete', 'report_completion');
+                        echo get_string('incomplete', 'report_fbccompletion');
                         break;
 
                     default:
@@ -275,7 +275,7 @@ foreach ($courses as $type => $infos) {
                 // Display link on first row
                 echo '</td><td class="c3">';
                 if ($first_row) {
-                    echo '<a href="'.$CFG->wwwroot.'/blocks/completionstatus/details.php?course='.$c_course->id.'&user='.$user->id.'">'.get_string('detailedview', 'report_completion').'</a>';
+                    echo '<a href="'.$CFG->wwwroot.'/blocks/completionstatus/details.php?course='.$c_course->id.'&user='.$user->id.'">'.get_string('detailedview', 'report_fbccompletion').'</a>';
                 }
                 echo '</td>';
 

@@ -18,7 +18,7 @@
  * Version details
  *
  * @package    report
- * @subpackage completion
+ * @subpackage fbccompletion
  * @copyright  2009 Catalyst IT Ltd
  * @author     Aaron Barnes <aaronb@catalyst.net.nz>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
@@ -28,4 +28,4 @@ defined('MOODLE_INTERNAL') || die;
 
 $plugin->version   = 2011110300;          // The current plugin version (Date: YYYYMMDDXX)
 $plugin->requires  = 2011110200;          // Requires this Moodle version
-$plugin->component = 'report_completion'; // Full name of the plugin (used for diagnostics)
+$plugin->component = 'report_fbccompletion'; // Full name of the plugin (used for diagnostics)

@@ -40,8 +40,8 @@ function report_completion_extend_navigation_course($navigation, $course, $conte
     if (has_capability('report/completion:view', $context)) {
         $completion = new completion_info($course);
         if ($completion->is_enabled() && $completion->has_criteria()) {
-            $url = new moodle_url('/report/completion/index.php', array('course'=>$course->id));
-            $navigation->add(get_string('pluginname','report_completion'), $url, navigation_node::TYPE_SETTING, null, null, new pix_icon('i/report', ''));
+            $url = new moodle_url('/report/fbccompletion/index.php', array('course'=>$course->id));
+            $navigation->add(get_string('pluginname','report_fbccompletion'), $url, navigation_node::TYPE_SETTING, null, null, new pix_icon('i/report', ''));
         }
     }
 }
@@ -58,7 +58,7 @@ function report_completion_extend_navigation_user($navigation, $user, $course) {
     return; //TODO: this plugin was not linked from navigation in 2.0, let's keep it that way for now --skodak
 
     if (report_completion_can_access_user_report($user, $course)) {
-        $url = new moodle_url('/report/completion/user.php', array('id'=>$user->id, 'course'=>$course->id));
+        $url = new moodle_url('/report/fbccompletion/user.php', array('id'=>$user->id, 'course'=>$course->id));
         $navigation->add(get_string('coursecompletion'), $url);
     }
 }
@@ -86,7 +86,7 @@ function report_completion_can_access_user_report($user, $course) {
     $coursecontext = context_course::instance($course->id);
     $personalcontext = context_user::instance($user->id);
 
-    if (has_capability('report/completion:view', $coursecontext)) {
+    if (has_capability('report/fbccompletion:view', $coursecontext)) {
         return true;
     }
 
@@ -115,9 +115,9 @@ function report_completion_page_type_list($pagetype, $parentcontext, $currentcon
     $array = array(
         '*'                       => get_string('page-x', 'pagetype'),
         'report-*'                => get_string('page-report-x', 'pagetype'),
-        'report-completion-*'     => get_string('page-report-completion-x',  'report_completion'),
-        'report-completion-index' => get_string('page-report-completion-index',  'report_completion'),
-        'report-completion-user'  => get_string('page-report-completion-user',  'report_completion')
+        'report-completion-*'     => get_string('page-report-completion-x',  'report_fbccompletion'),
+        'report-completion-index' => get_string('page-report-completion-index',  'report_fbccompletion'),
+        'report-completion-user'  => get_string('page-report-completion-user',  'report_fbccompletion')
     );
     return $array;
 }

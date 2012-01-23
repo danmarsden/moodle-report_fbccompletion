@@ -26,7 +26,7 @@
 
 $capabilities = array(
 
-    'report/completion:view' => array(
+    'report/fbccompletion:view' => array(
         'riskbitmask' => RISK_PERSONAL,
         'captype' => 'read',
         'contextlevel' => CONTEXT_COURSE,

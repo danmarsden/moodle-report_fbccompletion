@@ -47,7 +47,7 @@ $edituser = optional_param('edituser', 0, PARAM_INT);
 $course = $DB->get_record('course', array('id' => $courseid), '*', MUST_EXIST);
 $context = context_course::instance($course->id);
 
-$url = new moodle_url('/report/completion/index.php', array('course'=>$course->id));
+$url = new moodle_url('/report/fbccompletion/index.php', array('course'=>$course->id));
 $PAGE->set_url($url);
 $PAGE->set_pagelayout('report');
 
@@ -79,7 +79,7 @@ function csv_quote($value) {
 // Check permissions
 require_login($course);
 
-require_capability('report/completion:view', $context);
+require_capability('report/fbccompletion:view', $context);
 
 // Get group mode
 $group = groups_get_course_group($course, true); // Supposed to verify group
@@ -178,10 +178,10 @@ if ($csv) {
         )
     );
 
-    $PAGE->requires->js('/report/completion/textrotate.js');
+    $PAGE->requires->js('/report/fbccompletion/textrotate.js');
 
     // Handle groups (if enabled)
-    groups_print_course_menu($course, $CFG->wwwroot.'/report/completion/?course='.$course->id);
+    groups_print_course_menu($course, $CFG->wwwroot.'/report/fbccompletion/?course='.$course->id);
 }
 
 
@@ -229,7 +229,7 @@ if ($total) {
 
 
 // Build link for paging
-$link = $CFG->wwwroot.'/report/completion/?course='.$course->id;
+$link = $CFG->wwwroot.'/report/fbccompletion/?course='.$course->id;
 if (strlen($sort)) {
     $link .= '&amp;sort='.$sort;
 }
