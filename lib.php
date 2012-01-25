@@ -32,7 +32,7 @@ defined('MOODLE_INTERNAL') || die;
  * @param stdClass $course The course to object for the report
  * @param stdClass $context The context of the course
  */
-function report_completion_extend_navigation_course($navigation, $course, $context) {
+function report_fbccompletion_extend_navigation_course($navigation, $course, $context) {
     global $CFG;
 
     require_once($CFG->libdir.'/completionlib.php');
@@ -53,7 +53,7 @@ function report_completion_extend_navigation_course($navigation, $course, $conte
  * @param stdClass $user
  * @param stdClass $course The course to object for the report
  */
-function report_completion_extend_navigation_user($navigation, $user, $course) {
+function report_fbccompletion_extend_navigation_user($navigation, $user, $course) {
 
     return; //TODO: this plugin was not linked from navigation in 2.0, let's keep it that way for now --skodak
 
@@ -72,7 +72,7 @@ function report_completion_extend_navigation_user($navigation, $user, $course) {
  * @param stdClass $course
  * @return bool
  */
-function report_completion_can_access_user_report($user, $course) {
+function report_fbccompletion_can_access_user_report($user, $course) {
     global $USER, $CFG;
 
     if (empty($CFG->enablecompletion)) {
@@ -111,7 +111,7 @@ function report_completion_can_access_user_report($user, $course) {
  * @param stdClass $currentcontext Current context of block
  * @return array
  */
-function report_completion_page_type_list($pagetype, $parentcontext, $currentcontext) {
+function report_fbccompletion_page_type_list($pagetype, $parentcontext, $currentcontext) {
     $array = array(
         '*'                       => get_string('page-x', 'pagetype'),
         'report-*'                => get_string('page-report-x', 'pagetype'),

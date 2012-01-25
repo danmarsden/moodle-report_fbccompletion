@@ -18,9 +18,10 @@
  * Course completion progress report
  *
  * @package    report
- * @subpackage completion
+ * @subpackage completion+ report
  * @copyright  2009 Catalyst IT Ltd
  * @author     Aaron Barnes <aaronb@catalyst.net.nz>
+ * @author     Dan Marsden <dan@danmarsden.com>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
@@ -32,6 +33,13 @@ require_once($CFG->libdir.'/completionlib.php');
  */
 define('COMPLETION_REPORT_PAGE',        25);
 define('COMPLETION_REPORT_COL_TITLES',  true);
+
+//array of profile fields to add to display (ONLY CUSTOM USER PROFILE FIELDS SUPPORTED HERE)
+//format should be   array('displayname' =>, 'profilefieldshortname', 'displayname2'=> 'profilefieldshortname2');
+//eg:  $extraprofilefields = array('Employee ID' => 'EmpID');
+$extraprofilefields = array('Employee ID' => 'EmpID');
+
+
 
 /*
  * Setup page, check permissions
@@ -62,7 +70,7 @@ $silast  = optional_param('silast', 'all', PARAM_ALPHA);
 
 // Whether to show extra user identity information
 $extrafields = get_extra_user_fields($context);
-$leftcols = 1 + count($extrafields);
+$leftcols = 1 + count($extrafields) + count($extraprofilefields);
 
 // Function for quoting csv cell values
 function csv_quote($value) {
@@ -74,7 +82,6 @@ function csv_quote($value) {
         return '"'.str_replace('"',"'",$value).'"';
     }
 }
-
 
 // Check permissions
 require_login($course);
@@ -368,7 +375,7 @@ if (!$csv) {
     }
 
     // Overall course completion status
-    print '<th style="text-align: center;">'.get_string('course').'</th>';
+    print '<th style="text-align: center;" colspan="2">'.get_string('course').'</th>';
 
     print '</tr>';
 
@@ -419,7 +426,7 @@ if (!$csv) {
     }
 
     // Overall course aggregation method
-    print '<th scope="col" class="colheader aggheader aggcriteriacourse">';
+    print '<th scope="col" class="colheader aggheader aggcriteriacourse" colspan="2">';
 
     // Get course aggregation
     $method = $completion->get_aggregation_method();
@@ -446,9 +453,9 @@ if (!$csv) {
         }
 
         // Overall course completion status
-        print '<th scope="col" class="colheader criterianame">';
+        print '<th scope="col" class="colheader criterianame" colspan="2">';
 
-        print '<span class="completion-criterianame">'.get_string('coursecomplete', 'completion').'</span>';
+        print ''.get_string('coursecomplete', 'completion').'';
 
         print '</th></tr>';
     }
@@ -477,6 +484,10 @@ if (!$csv) {
     foreach ($extrafields as $field) {
         echo '<th scope="col" class="completion-identifyfield">' .
                 get_user_field_name($field) . '</th>';
+    }
+    foreach ($extraprofilefields as $ename => $efield) {
+        echo '<th scope="col" class="completion-identifyfield">' .
+            $ename . '</th>';
     }
 
     ///
@@ -537,7 +548,7 @@ if (!$csv) {
     }
 
     // Overall course completion status
-    print '<th class="criteriaicon">';
+    print '<th class="criteriaicon" colspan="2">';
     print '<img src="'.$OUTPUT->pix_url('i/course').'" class="icon" alt="'.get_string('course').'" title="'.get_string('coursecomplete', 'completion').'" />';
     print '</th>';
 
@@ -547,8 +558,27 @@ if (!$csv) {
 } else {
     // The CSV file does not contain any headers
 }
+//get customfields for all users. single sql query instead of per user.
+$profilefields = array();
+if (!empty($extraprofilefields)) {
+    $userids = array();
+    foreach($progress as $user) {
+        $userids[] = $user->id;
+    }
+    $sql = "SELECT ud.id, ud.userid, uf.shortname, ud.data FROM {user_info_field} uf, {user_info_data} ud
+                 WHERE ud.fieldid = uf.id
+                 AND uf.shortname IN ('".implode("','",$extraprofilefields)."')
+                 AND ud.userid IN (".implode(",",$userids).")";
 
+    $userfields = $DB->get_records_sql($sql);
 
+    //now arrange data in a handy way.
+    if (!empty($userfields)) {
+        foreach ($userfields as $uf) {
+            $profilefields[$uf->userid]->{$uf->shortname} = $uf->data;
+        }
+    }
+}
 ///
 /// Display a row for each user
 ///
@@ -560,6 +590,12 @@ foreach ($progress as $user) {
         foreach ($extrafields as $field) {
             echo $sep . csv_quote($user->{$field});
         }
+        foreach ($extraprofilefields as $efield) {
+            echo $sep;
+            if (!empty($profilefields[$user->id]->$efield)) {
+                echo csv_quote($profilefields[$user->id]->$efield);
+            }
+        }
     } else {
         print PHP_EOL.'<tr id="user-'.$user->id.'">';
 
@@ -567,6 +603,13 @@ foreach ($progress as $user) {
             $user->id.'&amp;course='.$course->id.'">'.fullname($user).'</a></th>';
         foreach ($extrafields as $field) {
             echo '<td>' . s($user->{$field}) . '</td>';
+        }
+        foreach ($extraprofilefields as $efield) {
+            echo '<td>';
+            if (!empty($profilefields[$user->id]->$efield)) {
+                echo $profilefields[$user->id]->$efield;
+            }
+            echo '</td>';
         }
     }
 
@@ -634,8 +677,11 @@ foreach ($progress as $user) {
 
         $completiontype = $is_complete ? 'y' : 'n';
         $completionicon = 'completion-auto-'.$completiontype;
-
-        $describe = get_string('completion-alt-auto-'.$completiontype, 'completion');
+        if ($is_complete && !empty($criteria_completion->gradefinal)) {
+            $describe = round($criteria_completion->gradefinal);
+        } else {
+            $describe = get_string('completion-alt-auto-'.$completiontype, 'completion');
+        }
 
         $a = new stdClass();
         $a->state    = $describe;
@@ -656,9 +702,11 @@ foreach ($progress as $user) {
                     '<img src="'.$OUTPUT->pix_url('i/completion-manual-'.($is_complete ? 'y' : 'n')).
                     '" alt="'.$describe.'" class="icon" title="'.get_string('markcomplete', 'completion').'" /></a></td>';
             } else {
-                print '<td class="completion-progresscell">'.
-                    '<img src="'.$OUTPUT->pix_url('i/'.$completionicon).
-                    '" alt="'.$describe.'" class="icon" title="'.$fulldescribe.'" /></td>';
+                print '<td class="completion-progresscell">';
+                if ($is_complete && !empty($criteria_completion->gradefinal)) {
+                    print '<span class "completion-gradecell">'.round($criteria_completion->gradefinal).'</span>';
+                }
+                print '</td>';
             }
         }
     }
@@ -672,6 +720,10 @@ foreach ($progress as $user) {
     );
 
     $ccompletion = new completion_completion($params);
+    $fullcompletiondate = '';
+    if ($ccompletion->is_complete()) {
+        $fullcompletiondate = userdate($ccompletion->timecompleted, get_string('strftimedatetime', 'core_langconfig'));
+    }
     $completiontype =  $ccompletion->is_complete() ? 'y' : 'n';
 
     $describe = get_string('completion-alt-auto-'.$completiontype, 'completion');
@@ -685,6 +737,7 @@ foreach ($progress as $user) {
 
     if ($csv) {
         print $sep.csv_quote($describe);
+        print $sep.csv_quote($fullcompletiondate);
     } else {
 
         print '<td class="completion-progresscell">';
@@ -693,6 +746,9 @@ foreach ($progress as $user) {
         print '<img src="'.$OUTPUT->pix_url('i/completion-auto-'.$completiontype).
                '" alt="'.$describe.'" class="icon" title="'.$fulldescribe.'" />';
 
+        print '</td>';
+        print '<td class="completion-progresscell">';
+        print $fullcompletiondate;
         print '</td>';
     }
 
